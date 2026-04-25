@@ -1,11 +1,346 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>TicketVault - Plateforme de Vente de Billets</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
-    <title>Yooo</title>
+    <!-- Navigation -->
+    <nav>
+        <div class="container">
+            <div class="logo">
+                <span>🎫</span> TicketVault
+            </div>
+            <div class="nav-buttons">
+                <button class="btn-login" id="navLogin">Connexion</button>
+                <button class="btn-primary" id="navProfile">Mon Compte</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenu principal -->
+    <div class="container">
+        <!-- Alertes -->
+        <div class="alert alert-success" id="successAlert"></div>
+        <div class="alert alert-error" id="errorAlert"></div>
+
+        <!-- Section Client -->
+        <section id="clientSection">
+            <h1 class="section-title">🎟️ Billets Disponibles</h1>
+            <div class="tickets-grid" id="ticketsGrid"></div>
+        </section>
+
+        <!-- Section Agent -->
+        <section id="agentSection" style="display: none;">
+            <h1 class="section-title">👨‍💼 Tableau de Bord Agent</h1>
+
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('tickets-tab')">Gestion des Billets</button>
+                <button class="tab" onclick="switchTab('validation-tab')">Validation des Données</button>
+                <button class="tab" onclick="switchTab('sales-tab')">Ventes</button>
+                <button class="tab" onclick="switchTab('agents-tab')">Agents Approuvés</button>
+            </div>
+
+            <!-- Tab: Gestion des Billets -->
+            <div id="tickets-tab" class="tab-content active">
+                <button class="btn-primary" onclick="openTicketModal()">➕ Ajouter un Billet</button>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Événement</th>
+                                <th>Prix</th>
+                                <th>Stock</th>
+                                <th>Vendus</th>
+                                <th>Créé par</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ticketsTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab: Validation -->
+            <div id="validation-tab" class="tab-content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="pendingCount">0</div>
+                        <div class="stat-label">En attente</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="approvedCount">0</div>
+                        <div class="stat-label">Approuvés</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="rejectedCount">0</div>
+                        <div class="stat-label">Rejetés</div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Événement</th>
+                                <th>Soumis par</th>
+                                <th>Date</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="validationTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab: Ventes -->
+            <div id="sales-tab" class="tab-content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalSales">0€</div>
+                        <div class="stat-label">Revenu Total</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalTicketsSold">0</div>
+                        <div class="stat-label">Billets Vendus</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalEvents">0</div>
+                        <div class="stat-label">Événements</div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Événement</th>
+                                <th>Acheteur</th>
+                                <th>Quantité</th>
+                                <th>Montant</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="salesTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab: Agents Approuvés -->
+            <div id="agents-tab" class="tab-content">
+                <button class="btn-primary" onclick="openAddAgentModal()">➕ Ajouter un Agent</button>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Nom</th>
+                                <th>Rôle</th>
+                                <th>Approuvé</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="agentsTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section Administrateur -->
+        <section id="adminSection" style="display: none;">
+            <h1 class="section-title">🔐 Tableau de Bord Administrateur</h1>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalUsers">0</div>
+                    <div class="stat-label">Utilisateurs</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalAgents">0</div>
+                    <div class="stat-label">Agents</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="platformRevenue">0€</div>
+                    <div class="stat-label">Revenu Plateforme</div>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('admin-users-tab')">Utilisateurs</button>
+                <button class="tab" onclick="switchTab('admin-agents-tab')">Approbation Agents</button>
+            </div>
+
+            <div id="admin-users-tab" class="tab-content active">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Email</th>
+                                <th>Rôle</th>
+                                <th>Inscrit</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="allUsersTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="admin-agents-tab" class="tab-content">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Nom</th>
+                                <th>Statut</th>
+                                <th>Raison</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pendingAgentsTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- MODALES -->
+
+    <!-- Modal: Connexion -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content login-form">
+            <div class="modal-header">
+                Connexion
+                <button class="close-btn" onclick="closeModal('loginModal')">✕</button>
+            </div>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Mot de passe</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%;">Connexion</button>
+                <div style="margin-top: 15px; text-align: center;">
+                    <p>Pas encore de compte? <a href="#" onclick="openSignupModal(); return false;"
+                            style="color: var(--secondary); font-weight: bold;">Inscrivez-vous</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Inscription -->
+    <div id="signupModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                Inscription
+                <button class="close-btn" onclick="closeModal('signupModal')">✕</button>
+            </div>
+            <form onsubmit="handleSignup(event)">
+                <div class="form-group">
+                    <label>Nom Complet</label>
+                    <input type="text" id="signupName" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="signupEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Mot de passe</label>
+                    <input type="password" id="signupPassword" required>
+                </div>
+                <div class="form-group">
+                    <label>Type de Compte</label>
+                    <select id="signupRole">
+                        <option value="client">Client</option>
+                        <option value="agent">Agent</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%;">Créer un Compte</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Acheter un Billet -->
+    <div id="buyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                Achat de Billets
+                <button class="close-btn" onclick="closeModal('buyModal')">✕</button>
+            </div>
+            <div id="buyContent"></div>
+        </div>
+    </div>
+
+    <!-- Modal: Ajouter un Billet -->
+    <div id="ticketModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span id="ticketModalTitle">Ajouter un Billet</span>
+                <button class="close-btn" onclick="closeModal('ticketModal')">✕</button>
+            </div>
+            <form onsubmit="handleAddTicket(event)">
+                <div class="form-group">
+                    <label>Nom de l'Événement</label>
+                    <input type="text" id="ticketName" required>
+                </div>
+                <div class="form-group">
+                    <label>Date & Heure</label>
+                    <input type="datetime-local" id="ticketDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Lieu</label>
+                    <input type="text" id="ticketLocation" required>
+                </div>
+                <div class="form-group">
+                    <label>Prix (€)</label>
+                    <input type="number" id="ticketPrice" min="0" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>Quantité en Stock</label>
+                    <input type="number" id="ticketQuantity" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="ticketDescription" rows="4"></textarea>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%;">Créer le Billet</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Ajouter un Agent -->
+    <div id="agentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                Ajouter un Agent
+                <button class="close-btn" onclick="closeModal('agentModal')">✕</button>
+            </div>
+            <form onsubmit="handleAddAgent(event)">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="agentEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Raison</label>
+                    <textarea id="agentReason" rows="3"
+                        placeholder="Expliquez pourquoi cet utilisateur devrait être approuvé..."></textarea>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%;">Soumettre pour Approbation</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
 </body>
+
 </html>
